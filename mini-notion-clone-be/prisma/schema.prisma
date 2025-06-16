@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BlockType {
+  text
+  checklist
+  image
+  code
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  notes      Note[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Note {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  title      String
+  blocks     Block[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Block {
+  id          Int       @id @default(autoincrement())
+  note_id     Int
+  note        Note      @relation(fields: [note_id], references: [id])
+  parent_id   Int?
+  parent      Block?    @relation("BlockToSubBlock", fields: [parent_id], references: [id])
+  children    Block[]   @relation("BlockToSubBlock")
+  type        BlockType
+  content     String
+  order_index Int
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
