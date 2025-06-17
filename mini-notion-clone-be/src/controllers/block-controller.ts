@@ -30,8 +30,6 @@ export class BlockController {
             const blockId = Number(req.params.id);
             const request: UpdateBlockRequest = req.body;
             const file = req.file;
-            console.log('Updating block with ID:', blockId);
-            console.log('Request content:', request);
             const response = await BlockService.update(req.user!, blockId, request, file);
             res.status(200).json({ data: response });
         } catch (e) {

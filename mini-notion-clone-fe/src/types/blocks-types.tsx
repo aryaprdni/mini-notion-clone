@@ -1,4 +1,4 @@
-export type BlockType = "text" | "image";
+export type BlockType = "text" | "image" | "code" | "checklist";
 
 export type TextContent = { text: string };
 export type ImageContent = { url: string };

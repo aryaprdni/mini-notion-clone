@@ -8,7 +8,7 @@ export const getBlocksByNote = async (noteId: string): Promise<Block[]> => {
 
 export const createBlock = async (
     noteId: string,
-    type: "text" | "image",
+    type: "text" | "image" | "checklist" | "code",
     content: string
 ) => {
     const payload = {

@@ -16,13 +16,13 @@
 git clone https://github.com/USERNAME/mini-notion-clone.git
 cd mini-notion-clone
 
-1. FRONTND
+1. FRONTEND
 cd mini-notion-clone-fe
 npm install atau yarn install
-npm run dev atau yarn start
+npm run dev atau yarn dev
 
 2. BACKEND 
 cd mini-notion-clone-be
 npm install atau yarn install
-npm run dev atau yarn start
+npm run dev atau yarn dev
 

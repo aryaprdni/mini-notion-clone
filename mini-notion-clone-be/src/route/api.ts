@@ -3,9 +3,13 @@ import { authMiddleware } from "../middleware/auth-middleware";
 import { NoteController } from "../controllers/note-controller";
 import { BlockController } from "../controllers/block-controller";
 import { upload } from "../middleware/upload-middleware";
+import { UserController } from "../controllers/user-controller";
 
 export const apiRouter = express.Router();
 apiRouter.use(authMiddleware);
+
+// User routes
+apiRouter.get("/users/me", UserController.checkAuth);
 
 // Note routes
 apiRouter.post("/notes", NoteController.create);

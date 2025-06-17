@@ -41,7 +41,13 @@ export default function NoteList() {
           <Card key={note.id} sx={{ cursor: "pointer" }} onClick={() => navigate(`/notes/${note.id}`)}>
             <CardContent sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Typography>{note.title}</Typography>
-              <IconButton onClick={() => handleDelete(note.id)}><DeleteIcon /></IconButton>
+              <IconButton onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(note.id);
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
             </CardContent>
           </Card>
         ))}

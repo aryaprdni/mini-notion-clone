@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
+import api from "../../api/axios";
 import {
   TextField,
   Button,
@@ -7,8 +8,10 @@ import {
   Typography,
   Box,
   Paper,
+  Link,
 } from "@mui/material";
-import api from "../../api/axios";
+import { useSnackbar } from "../../contexts/snackbar-context";
+import { AxiosError } from "axios";
 
 interface RegisterForm {
   name: string;
@@ -16,20 +19,33 @@ interface RegisterForm {
   password: string;
 }
 
+interface ErrorResponse {
+  message?: string;
+  errors?: string;
+}
+
 export default function Register() {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterForm>();
+  } = useForm<RegisterForm>({ mode: "onChange" });
+
   const navigate = useNavigate();
+  const { showMessage } = useSnackbar();
 
   const onSubmit = async (data: RegisterForm) => {
     try {
       await api.post("/users", data);
-      navigate("/login");
-    } catch (err) {
-      console.error("Register failed", err);
+      showMessage("Register berhasil! Mengarahkan ke login...", "success");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (error) {
+      const err = error as AxiosError<ErrorResponse>;
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.errors ||
+        "Register gagal";
+      showMessage(message, "error");
     }
   };
 
@@ -65,17 +81,32 @@ export default function Register() {
               error={!!errors.email}
               helperText={errors.email?.message}
             />
+
             <TextField
               label="Password"
               type="password"
               fullWidth
-              {...register("password", { required: "Password is required" })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
               error={!!errors.password}
               helperText={errors.password?.message}
             />
+
             <Button type="submit" variant="contained" fullWidth>
               Register
             </Button>
+
+            <Typography variant="body2" align="center">
+              Sudah punya akun?{" "}
+              <Link component={RouterLink} to="/login">
+                Masuk di sini
+              </Link>
+            </Typography>
           </Stack>
         </form>
       </Paper>

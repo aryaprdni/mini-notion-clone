@@ -49,4 +49,19 @@ export class UserController {
             next(e);
         }
     }
+
+    static async checkAuth(req: UserRequest, res: Response, next: NextFunction) {
+        try {
+            const user = req.user;
+
+            res.status(200).json({
+                data: {
+                    id: user?.id,
+                    email: user?.email,
+                },
+            });
+        } catch (e) {
+            next(e);
+        }
+    }
 }

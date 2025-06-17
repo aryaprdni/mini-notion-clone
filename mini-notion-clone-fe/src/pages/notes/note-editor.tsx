@@ -6,8 +6,10 @@ import {
   TextField,
   IconButton,
   Button,
+  Box,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import { getNoteById, updateNoteTitle } from "./api";
 import {
   createBlock,
@@ -16,7 +18,6 @@ import {
   deleteBlock,
   updateBlockOrders,
 } from "../blocks/api";
-import BlockRenderer from "../components/block-renderer";
 import {
   DndContext,
   closestCenter,
@@ -31,7 +32,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Block } from "../../types/blocks-types";
+import type { Block, BlockType } from "../../types/blocks-types";
+import BlockRenderer from "../../components/block-renderer";
 
 function SortableItem({
   block,
@@ -52,8 +54,20 @@ function SortableItem({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <BlockRenderer block={block} onChange={onChange} onDelete={onDelete} />
+    <div ref={setNodeRef} style={style}>
+      <Stack direction="row" alignItems="flex-start" spacing={1}>
+        <Box
+          {...attributes}
+          {...listeners}
+          sx={{ cursor: "grab", pt: 1 }}
+        >
+          <DragIndicatorIcon />
+        </Box>
+
+        <Box sx={{ flex: 1 }}>
+          <BlockRenderer block={block} onChange={onChange} onDelete={onDelete} />
+        </Box>
+      </Stack>
     </div>
   );
 }
@@ -79,15 +93,8 @@ export default function NoteEditor() {
   const handleSave = async () => {
     if (!noteId) return;
     await updateNoteTitle(noteId, title);
-    navigate("/notes");
+    navigate("/");
   };
-
-  const handleAddTextBlock = async () => {
-    if (!noteId) return;
-    const newBlock = await createBlock(noteId, "text", "New text block");
-    setBlocks((prev) => [...prev, newBlock]);
-  };
-
 
   const handleUpdateBlock = async (
     blockId: number,
@@ -97,7 +104,9 @@ export default function NoteEditor() {
     const updated = await updateBlock(blockId, content, file);
     setBlocks((prev) =>
       prev.map((b) =>
-        b.id === blockId ? { ...b, content: updated.content, type: updated.type } : b
+        b.id === blockId
+          ? { ...b, content: updated.content, type: updated.type }
+          : b
       )
     );
   };
@@ -129,13 +138,27 @@ export default function NoteEditor() {
   useEffect(() => {
     fetchNote();
     fetchBlocks();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noteId]);
+
+  const createBlockAndPush = async (type: BlockType) => {
+    if (!noteId) return;
+    const placeholder =
+      type === "text"
+        ? "New text block"
+        : type === "checklist"
+        ? "New checklist block"
+        : type === "code"
+        ? "Your code here"
+        : "New image block";
+    const newBlock = await createBlock(noteId, type, placeholder);
+    setBlocks((prev) => [...prev, newBlock]);
+  };
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <IconButton onClick={() => navigate("/notes")}>
+        <IconButton onClick={() => navigate("/")}>
           <ArrowBackIcon />
         </IconButton>
         <TextField
@@ -175,9 +198,12 @@ export default function NoteEditor() {
       </DndContext>
 
       <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-        <Button variant="contained" onClick={handleAddTextBlock}>
-          + Add Text Block
+        <Button onClick={() => createBlockAndPush("text")}>+ Text</Button>
+        <Button onClick={() => createBlockAndPush("checklist")}>
+          + Checklist
         </Button>
+        <Button onClick={() => createBlockAndPush("code")}>+ Code</Button>
+        <Button onClick={() => createBlockAndPush("image")}>+ Image</Button>
       </Stack>
     </Container>
   );

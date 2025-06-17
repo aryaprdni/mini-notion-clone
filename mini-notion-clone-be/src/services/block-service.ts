@@ -57,22 +57,30 @@ export class BlockService {
             throw new ResponseError(404, "Block not found");
         }
 
-        let newContent;
+        let newContent: string;
         let newType = block.type;
 
         if (file) {
+            if (block.type !== "image") {
+                throw new ResponseError(400, "Cannot upload image to non-image block");
+            }
+
             const fileUrl = `/uploads/${file.filename}`;
             newContent = fileUrl;
-            newType = "image";
-        } else if (block.type === "text") {
-            if (!request.content) {
-                throw new ResponseError(400, "Missing text content");
-            }
-            newContent = request.content;
-        } else if (block.type === "image") {
-            throw new ResponseError(400, "No image provided");
         } else {
-            throw new ResponseError(400, "Unsupported block type");
+            if (!request.content) {
+                throw new ResponseError(400, "Missing content");
+            }
+
+            switch (block.type) {
+                case "text":
+                case "checklist":
+                case "code":
+                    newContent = request.content;
+                    break;
+                default:
+                    throw new ResponseError(400, "Unsupported block type");
+            }
         }
 
         const updated = await prismaClient.block.update({
@@ -85,6 +93,7 @@ export class BlockService {
 
         return toBlockResponse(updated);
     }
+
 
 
     static async remove(user: User, blockId: number): Promise<void> {
